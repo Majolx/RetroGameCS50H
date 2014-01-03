@@ -1,0 +1,18 @@
+# XNA 4.0 .gitignore by Mathew Larribas
+
+# Common files to ignore
+*.swp
+
+# Compressed Files
+*.zip
+
+# VS2010 Files
+*.suo
+
+# XNA Files
+**/bin/*
+**/obj/*
+**/**/bin/*
+**/**/obj/*
+*.chachefile
+*.Debug.cachefile
