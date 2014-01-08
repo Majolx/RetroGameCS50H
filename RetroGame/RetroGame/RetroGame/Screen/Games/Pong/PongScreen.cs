@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RetroGame;
+using RetroGame.Graphics;
 
 namespace RetroGame.Screen
 {
@@ -15,7 +16,6 @@ namespace RetroGame.Screen
         #region Fields
 
         Viewport vp;
-        int speed = 5;
 
         Vector2[] v2Player = new Vector2[2];
         Rectangle[] rPlayer = new Rectangle[2];
@@ -24,15 +24,28 @@ namespace RetroGame.Screen
 
         int bound = 30;
 
+        // Paddle
         int paddleHeight = 60;
         int paddleWidth = 30;
+
+        // Ball
+        SpriteAnimation ball;
+        float speed = 50f;
+        Vector2 ballSpeed = new Vector2(.5f, .5f);
 
         Vector2[] v2Arena = new Vector2[3];
         Rectangle[] rArena = new Rectangle[3];
         Texture2D whiteRectangle;
-        
+        Texture2D ballTexture;
 
+
+        DialogBoxScreen dialog;
         SpriteFont font;
+
+        /// <summary>
+        /// A screen-specific content manager.
+        /// </summary>
+        public ContentManager content;
 
         #endregion
 
@@ -47,6 +60,12 @@ namespace RetroGame.Screen
 
         public override void LoadContent()
         {
+            if (content == null)
+                content = new ContentManager(ScreenManager.Game.Services, "Content");
+
+            ballTexture = content.Load<Texture2D>("sprite/ball");
+
+
             Initialize();
 
             base.LoadContent();
@@ -62,6 +81,16 @@ namespace RetroGame.Screen
 
             rPlayer[0] = new Rectangle((int)v2Player[0].X, (int)v2Player[0].Y, paddleWidth, paddleHeight);
             rPlayer[1] = new Rectangle((int)v2Player[1].X, (int)v2Player[1].Y, paddleWidth, paddleHeight);
+
+            // Set up ball
+            ball = new SpriteAnimation(ballTexture);
+
+            ball.AddAnimation("Idle", 0, 0, 300, 297, 1, 0.1f);
+
+            ball.Position = new Vector2(200, 200);
+            ball.DrawOffset = new Vector2(0, 0);
+            ball.CurrentAnimation = "Idle";
+            ball.IsAnimating = true;
 
 
             // Set up arena
@@ -83,26 +112,65 @@ namespace RetroGame.Screen
 
         #region Update and Draw
 
+
+        /// <summary>
+        /// Updates the score, paddle positions, and ball position.
+        /// </summary>
+        public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
+        {
+            // Update paddle position
+            for (int i = 0; i < rPlayer.Length; i++)
+            {
+                rPlayer[i].Y = (int)v2Player[i].Y;
+            }
+
+            // Update ball position
+            float ballX = MathHelper.Clamp(
+                ball.Position.X, 0 + ball.DrawOffset.X, ScreenManager.GraphicsDevice.Viewport.Width);
+            float ballY = MathHelper.Clamp(
+                ball.Position.Y, 0 + ball.DrawOffset.Y, ScreenManager.GraphicsDevice.Viewport.Height);
+
+            ball.Position += ballSpeed * (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+
+            int maxX = (int)(ScreenManager.GraphicsDevice.Viewport.Width - ball.Width * Camera.scale.X);
+            int maxY = (int)(ScreenManager.GraphicsDevice.Viewport.Height - ball.Height * Camera.scale.Y);
+
+            // Check for bounce
+            if (ball.Position.X > maxX || ball.Position.X < 0)
+                ballSpeed.X *= -1;
+            if (ball.Position.Y > maxY || ball.Position.Y < 0)
+                ballSpeed.Y *= -1;
+
+            base.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
+        }
+
+
+        /// <summary>
+        /// Handles paddle movement and options menu selection
+        /// </summary>
+        /// <param name="input"></param>
         public override void HandleInput(InputState input)
         {
+            // Get player input
             if (input.IsKeyDown(Keys.S) && v2Player[0].Y < vp.Height - bound - rPlayer[0].Height)
                 v2Player[0].Y += speed;
 
             if (input.IsKeyDown(Keys.W) && v2Player[0].Y > bound)
                 v2Player[0].Y -= speed;
 
-            UpdateRectangles();
+            if (input.IsKeyDown(Keys.P))
+                popupDialogScreen();
+            
 
             base.HandleInput(input);
         }
 
-        public void UpdateRectangles()
+
+        protected virtual void popupDialogScreen()
         {
-            for (int i = 0; i < rPlayer.Length; i++)
-            {
-                rPlayer[i].Y = (int)v2Player[i].Y;
-            }
+            ScreenManager.AddScreen(new DialogBoxScreen("Mat", "Hey, this is a test!"), null);
         }
+
 
         public override void Draw(GameTime gameTime)
         {
@@ -117,6 +185,15 @@ namespace RetroGame.Screen
             // Draw the paddles
             sb.Draw(whiteRectangle, rPlayer[0], Color.White);
             sb.Draw(whiteRectangle, rPlayer[1], Color.White);
+
+            // Draw the ball
+            ball.Draw(sb, Camera.DisplayOffset.X, Camera.DisplayOffset.Y, Camera.scale);
+
+            // If the dialog box screen exists, draw it.
+            if (dialog != null)
+            {
+                dialog.Draw(gameTime);
+            }
 
             sb.End();
 

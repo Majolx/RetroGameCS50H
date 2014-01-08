@@ -1,0 +1,197 @@
+[1mdiff --git a/RetroGame/RetroGame/RetroGame/RetroGame.csproj b/RetroGame/RetroGame/RetroGame/RetroGame.csproj[m
+[1mindex 530043c..ffaf997 100644[m
+[1m--- a/RetroGame/RetroGame/RetroGame/RetroGame.csproj[m
+[1m+++ b/RetroGame/RetroGame/RetroGame/RetroGame.csproj[m
+[36m@@ -107,11 +107,14 @@[m
+     </Reference>[m
+   </ItemGroup>[m
+   <ItemGroup>[m
+[32m+[m[32m    <Compile Include="Camera.cs" />[m
+     <Compile Include="Game.cs" />[m
+     <Compile Include="Properties\AssemblyInfo.cs" />[m
+[32m+[m[32m    <Compile Include="Screen\DialogBoxScreen.cs" />[m
+     <Compile Include="Screen\Games\AsteroidGameScreen.cs" />[m
+     <Compile Include="Screen\DebugScreen.cs" />[m
+     <Compile Include="Screen\DisplayMenuScreen.cs" />[m
+[32m+[m[32m    <Compile Include="Screen\Games\Pong\Ball.cs" />[m
+     <Compile Include="Screen\LoadingScreen.cs" />[m
+     <Compile Include="Screen\MainMenuScreen.cs" />[m
+     <Compile Include="Screen\Menu\MenuEntry.cs" />[m
+[36m@@ -119,10 +122,13 @@[m
+     <Compile Include="Screen\MessageBoxScreen.cs" />[m
+     <Compile Include="Screen\OptionsMenuScreen.cs" />[m
+     <Compile Include="Screen\PlayerIndexEventArgs.cs" />[m
+[31m-    <Compile Include="Screen\Games\PongScreen.cs" />[m
+[32m+[m[32m    <Compile Include="Screen\Games\Pong\PongScreen.cs" />[m
+     <Compile Include="Screen\ScreenManager\GameScreen.cs" />[m
+     <Compile Include="Screen\ScreenManager\InputState.cs" />[m
+     <Compile Include="Screen\ScreenManager\ScreenManager.cs" />[m
+[32m+[m[32m    <Compile Include="Sprite\FrameAnimation.cs" />[m
+[32m+[m[32m    <Compile Include="Sprite\MobileSprite.cs" />[m
+[32m+[m[32m    <Compile Include="Sprite\SpriteAnimation.cs" />[m
+   </ItemGroup>[m
+   <ItemGroup>[m
+     <Content Include="Game.ico" />[m
+[1mdiff --git a/RetroGame/RetroGame/RetroGame/RetroGame.csproj.user b/RetroGame/RetroGame/RetroGame/RetroGame.csproj.user[m
+[1mindex 6f23531..a6b4976 100644[m
+[1m--- a/RetroGame/RetroGame/RetroGame/RetroGame.csproj.user[m
+[1m+++ b/RetroGame/RetroGame/RetroGame/RetroGame.csproj.user[m
+[36m@@ -9,5 +9,6 @@[m
+     <ErrorReportUrlHistory />[m
+     <FallbackCulture>en-US</FallbackCulture>[m
+     <VerifyUploadedFiles>false</VerifyUploadedFiles>[m
+[32m+[m[32m    <ProjectView>ShowAllFiles</ProjectView>[m
+   </PropertyGroup>[m
+ </Project>[m
+\ No newline at end of file[m
+[1mdiff --git a/RetroGame/RetroGame/RetroGame/Screen/Games/PongScreen.cs b/RetroGame/RetroGame/RetroGame/Screen/Games/PongScreen.cs[m
+[1mdeleted file mode 100644[m
+[1mindex 7cb43f9..0000000[m
+[1m--- a/RetroGame/RetroGame/RetroGame/Screen/Games/PongScreen.cs[m
+[1m+++ /dev/null[m
+[36m@@ -1,127 +0,0 @@[m
+[31m-﻿using System;[m
+[31m-using System.Collections.Generic;[m
+[31m-using System.Linq;[m
+[31m-using System.Text;[m
+[31m-using Microsoft.Xna.Framework;[m
+[31m-using Microsoft.Xna.Framework.Content;[m
+[31m-using Microsoft.Xna.Framework.Graphics;[m
+[31m-using Microsoft.Xna.Framework.Input;[m
+[31m-using RetroGame;[m
+[31m-[m
+[31m-namespace RetroGame.Screen[m
+[31m-{[m
+[31m-    class PongScreen : GameScreen[m
+[31m-    {[m
+[31m-        #region Fields[m
+[31m-[m
+[31m-        Viewport vp;[m
+[31m-        int speed = 5;[m
+[31m-[m
+[31m-        Vector2[] v2Player = new Vector2[2];[m
+[31m-        Rectangle[] rPlayer = new Rectangle[2];[m
+[31m-        int[] score = { 0, 0 };[m
+[31m-[m
+[31m-[m
+[31m-        int bound = 30;[m
+[31m-[m
+[31m-        int paddleHeight = 60;[m
+[31m-        int paddleWidth = 30;[m
+[31m-[m
+[31m-        Vector2[] v2Arena = new Vector2[3];[m
+[31m-        Rectangle[] rArena = new Rectangle[3];[m
+[31m-        Texture2D whiteRectangle;[m
+[31m-        [m
+[31m-[m
+[31m-        SpriteFont font;[m
+[31m-[m
+[31m-        #endregion[m
+[31m-[m
+[31m-        #region Initialization[m
+[31m-[m
+[31m-[m
+[31m-        public PongScreen()[m
+[31m-        {[m
+[31m-            TransitionOnTime = TimeSpan.FromSeconds(0.5);[m
+[31m-            TransitionOffTime = TimeSpan.FromSeconds(0.5);[m
+[31m-        }[m
+[31m-[m
+[31m-        public override void LoadContent()[m
+[31m-        {[m
+[31m-            Initialize();[m
+[31m-[m
+[31m-            base.LoadContent();[m
+[31m-        }[m
+[31m-[m
+[31m-        public void Initialize()[m
+[31m-        {[m
+[31m-            vp = ScreenManager.Game.GraphicsDevice.Viewport;[m
+[31m-[m
+[31m-            // Set up paddles[m
+[31m-            v2Player[0] = new Vector2(bound, vp.Height / 2 - (paddleHeight / 2));[m
+[31m-            v2Player[1] = new Vector2(vp.Width - bound - paddleWidth, vp.Height / 2 - (paddleHeight / 2));[m
+[31m-[m
+[31m-            rPlayer[0] = new Rectangle((int)v2Player[0].X, (int)v2Player[0].Y, paddleWidth, paddleHeight);[m
+[31m-            rPlayer[1] = new Rectangle((int)v2Player[1].X, (int)v2Player[1].Y, paddleWidth, paddleHeight);[m
+[31m-[m
+[31m-[m
+[31m-            // Set up arena[m
+[31m-            v2Arena[0] = new Vector2(0, 0);[m
+[31m-            v2Arena[1] = new Vector2(vp.Width / 2 - bound / 2, 0);[m
+[31m-            v2Arena[2] = new Vector2(0, vp.Height - bound);[m
+[31m-[m
+[31m-            rArena[0] = new Rectangle((int)v2Arena[0].X, (int)v2Arena[0].Y, vp.Width, bound);[m
+[31m-            rArena[1] = new Rectangle((int)v2Arena[1].X, (int)v2Arena[1].Y, bound, vp.Height);[m
+[31m-            rArena[2] = new Rectangle((int)v2Arena[2].X, (int)v2Arena[2].Y, vp.Width, bound);[m
+[31m-[m
+[31m-            // Set white texture[m
+[31m-            whiteRectangle = new Texture2D(ScreenManager.Game.GraphicsDevice, 1, 1);[m
+[31m-            whiteRectangle.SetData(new[] { Color.White });[m
+[31m-        }[m
+[31m-[m
+[31m-[m
+[31m-        #endregion[m
+[31m-[m
+[31m-        #region Update and Draw[m
+[31m-[m
+[31m-        public override void HandleInput(InputState input)[m
+[31m-        {[m
+[31m-            if (input.IsKeyDown(Keys.S) && v2Player[0].Y < vp.Height - bound - rPlayer[0].Height)[m
+[31m-                v2Player[0].Y += speed;[m
+[31m-[m
+[31m-            if (input.IsKeyDown(Keys.W) && v2Player[0].Y > bound)[m
+[31m-                v2Player[0].Y -= speed;[m
+[31m-[m
+[31m-            UpdateRectangles();[m
+[31m-[m
+[31m-            base.HandleInput(input);[m
+[31m-        }[m
+[31m-[m
+[31m-        public void UpdateRectangles()[m
+[31m-        {[m
+[31m-            for (int i = 0; i < rPlayer.Length; i++)[m
+[31m-            {[m
+[31m-                rPlayer[i].Y = (int)v2Player[i].Y;[m
+[31m-            }[m
+[31m-        }[m
+[31m-[m
+[31m-        public override void Draw(GameTime gameTime)[m
+[31m-        {[m
+[31m-            SpriteBatch sb = ScreenManager.SpriteBatch;[m
+[31m-[m
+[31m-            sb.Begin();[m
+[31m-[m
+[31m-            // Draw the arena[m
+[31m-            for (int i = 0; i < v2Arena.Length; i++)[m
+[31m-                sb.Draw(whiteRectangle, rArena[i], Color.White);[m
+[31m-[m
+[31m-            // Draw the paddles[m
+[31m-            sb.Draw(whiteRectangle, rPlayer[0], Color.White);[m
+[31m-            sb.Draw(whiteRectangle, rPlayer[1], Color.White);[m
+[31m-[m
+[31m-            sb.End();[m
+[31m-[m
+[31m-            base.Draw(gameTime);[m
+[31m-        }[m
+[31m-        #endregion[m
+[31m-    }[m
+[31m-}[m
+[1mdiff --git a/RetroGame/RetroGame/RetroGameContent/RetroGameContent.contentproj b/RetroGame/RetroGame/RetroGameContent/RetroGameContent.contentproj[m
+[1mindex d9ed13d..ced5cb2 100644[m
+[1m--- a/RetroGame/RetroGame/RetroGameContent/RetroGameContent.contentproj[m
+[1m+++ b/RetroGame/RetroGame/RetroGameContent/RetroGameContent.contentproj[m
+[36m@@ -101,6 +101,13 @@[m
+       <Processor>TextureProcessor</Processor>[m
+     </Compile>[m
+   </ItemGroup>[m
+[32m+[m[32m  <ItemGroup>[m
+[32m+[m[32m    <Compile Include="sprite\ball.png">[m
+[32m+[m[32m      <Name>ball</Name>[m
+[32m+[m[32m      <Importer>TextureImporter</Importer>[m
+[32m+[m[32m      <Processor>TextureProcessor</Processor>[m
+[32m+[m[32m    </Compile>[m
+[32m+[m[32m  </ItemGroup>[m
+   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />[m
+   <!--  To modify your build process, add your task inside one of the targets below and uncomment it. [m
+        Other similar extension points exist, see Microsoft.Common.targets.[m

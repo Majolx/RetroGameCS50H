@@ -58,8 +58,8 @@ namespace RetroGame
             Content.RootDirectory = "Content";
 
             graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferWidth = 1152;
-            graphics.PreferredBackBufferHeight = 864;
+            graphics.PreferredBackBufferWidth = 800;
+            graphics.PreferredBackBufferHeight = 600;
 
             // Create the screen manager component.
             screenManager = new ScreenManager(this);

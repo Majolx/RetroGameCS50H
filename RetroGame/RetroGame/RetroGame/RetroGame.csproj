@@ -107,11 +107,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Camera.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Screen\DialogBoxScreen.cs" />
     <Compile Include="Screen\Games\AsteroidGameScreen.cs" />
     <Compile Include="Screen\DebugScreen.cs" />
     <Compile Include="Screen\DisplayMenuScreen.cs" />
+    <Compile Include="Screen\Games\Pong\Ball.cs" />
     <Compile Include="Screen\LoadingScreen.cs" />
     <Compile Include="Screen\MainMenuScreen.cs" />
     <Compile Include="Screen\Menu\MenuEntry.cs" />
@@ -119,10 +122,13 @@
     <Compile Include="Screen\MessageBoxScreen.cs" />
     <Compile Include="Screen\OptionsMenuScreen.cs" />
     <Compile Include="Screen\PlayerIndexEventArgs.cs" />
-    <Compile Include="Screen\Games\PongScreen.cs" />
+    <Compile Include="Screen\Games\Pong\PongScreen.cs" />
     <Compile Include="Screen\ScreenManager\GameScreen.cs" />
     <Compile Include="Screen\ScreenManager\InputState.cs" />
     <Compile Include="Screen\ScreenManager\ScreenManager.cs" />
+    <Compile Include="Sprite\FrameAnimation.cs" />
+    <Compile Include="Sprite\MobileSprite.cs" />
+    <Compile Include="Sprite\SpriteAnimation.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />
