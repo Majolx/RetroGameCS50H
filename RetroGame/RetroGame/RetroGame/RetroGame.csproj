@@ -110,7 +110,11 @@
     <Compile Include="Camera.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+<<<<<<< HEAD
     <Compile Include="Screen\DialogBoxScreen.cs" />
+=======
+    <Compile Include="Screen\ExtraClassForGames\Asteroid\Sprite.cs" />
+>>>>>>> asteroids game functional not done
     <Compile Include="Screen\Games\AsteroidGameScreen.cs" />
     <Compile Include="Screen\DebugScreen.cs" />
     <Compile Include="Screen\DisplayMenuScreen.cs" />
