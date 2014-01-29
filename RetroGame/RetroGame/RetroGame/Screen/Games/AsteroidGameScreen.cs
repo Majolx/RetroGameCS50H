@@ -80,6 +80,8 @@ namespace RetroGame.Screen
         {
             TransitionOnTime = TimeSpan.FromSeconds(0.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
+
+            lives = 3;
         }        
 
         /// <summary>
@@ -137,6 +139,7 @@ namespace RetroGame.Screen
             
             //set the ship to be alive
             ship.Create();
+
         }
 
         /// <summary>
@@ -161,63 +164,59 @@ namespace RetroGame.Screen
             //get the new keyboard state
             currentKBState = Keyboard.GetState();
 
-            //make the ship move in the direction it's facing
-            if (currentKBState.IsKeyDown(Keys.Up))
+            if (ship.Alive)
             {
-                //full speed
-                AccelerateShip();
-            }
-            else if (currentKBState.IsKeyUp(Keys.Up))
-            {
-                //make the ship stop slowly instead
-                //of full stop when the key is realeased
-                DecelerateShip();
-            }
+                //make the ship move in the direction it's facing
+                if (currentKBState.IsKeyDown(Keys.Up))
+                {
+                    //full speed
+                    AccelerateShip();
+                }
+                else if (currentKBState.IsKeyUp(Keys.Up))
+                {
+                    //make the ship stop slowly instead
+                    //of full stop when the key is realeased
+                    DecelerateShip();
+                }
 
-            //to make the ship appear to go in hyperSpace
-            //porting in a random place
-            //Left ctrl key
-            if (currentKBState.IsKeyUp(Keys.LeftControl) &&
-                previousKBState.IsKeyDown(Keys.LeftControl))
-            {
-                HyperSpace();
-            }
-            //Right ctrl key
-            if (currentKBState.IsKeyUp(Keys.RightControl) &&
-                previousKBState.IsKeyDown(Keys.RightControl))
-            {
-                HyperSpace();
-            }
+                //to make the ship appear to go in hyperSpace
+                //porting in a random place
+                //Left ctrl key
+                if (currentKBState.IsKeyUp(Keys.LeftControl) &&
+                    previousKBState.IsKeyDown(Keys.LeftControl))
+                {
+                    HyperSpace();
+                }
+                //Right ctrl key
+                if (currentKBState.IsKeyUp(Keys.RightControl) &&
+                    previousKBState.IsKeyDown(Keys.RightControl))
+                {
+                    HyperSpace();
+                }
 
-            //make the ship rotate
-            //clockwise
-            if (currentKBState.IsKeyDown(Keys.Left))
-                ship.Rotation += 0.05f;
-            //counter clockwise
-            if (currentKBState.IsKeyDown(Keys.Right))
-                ship.Rotation -= 0.05f;
+                //make the ship rotate
+                //clockwise
+                if (currentKBState.IsKeyDown(Keys.Left))
+                    ship.Rotation += 0.05f;
+                //counter clockwise
+                if (currentKBState.IsKeyDown(Keys.Right))
+                    ship.Rotation -= 0.05f;
 
-            //space to shoot
-            if (currentKBState.IsKeyUp(Keys.Space) && previousKBState.IsKeyDown(Keys.Space))
-                FireShot();
+                //space to shoot
+                if (currentKBState.IsKeyUp(Keys.Space) && previousKBState.IsKeyDown(Keys.Space))
+                    FireShot();
+            }
 
             //when game over
             if (gameOver)
             {
+                if (ship.Alive)
+                    ship.Kill();
+
                 if (currentKBState.IsKeyDown(Keys.Enter))
                 {
-                    level = 0;
-                    score = 0;
-                    lives = 3;
-                    Initialize();
-                    CreateAsteroids();
+                    NewLevel();
                     gameOver = false;
-                }
-                else
-                {
-                    asteroids.Clear();
-                    ship.Kill();
-                    return;
                 }
             }
             
@@ -343,12 +342,18 @@ namespace RetroGame.Screen
 
             if (allDead)
             {
-                Initialize();
                 level++;
-                asteroids.Clear();
-                CreateAsteroids();
+                NewLevel();
             }
 
+        }
+
+        private void NewLevel()
+        {
+            asteroids.Clear();
+            Initialize();
+            lives = 3;
+            CreateAsteroids();
         }
 
         //funtion to handle the update for the bullet
@@ -360,7 +365,6 @@ namespace RetroGame.Screen
             foreach (Sprite s in shots)
             {
                 s.Position += s.Velocity;
-
                 foreach (Sprite a in asteroids)
                 {
                     if (a.Alive && CheckAsteroidCollision(a, s))
@@ -396,7 +400,7 @@ namespace RetroGame.Screen
                 }
             }
 
-            //Split the aseroid if possible
+            //Split the asteroid if possible
             foreach (Sprite a in destroyed)
             {
                 SplitAsteroid(a);
@@ -557,6 +561,7 @@ namespace RetroGame.Screen
         //Post  Make asteroid appear on the opposite side
         private void UpdateAsteroids()
         {
+            List<Sprite> destroyed = new List<Sprite>();
             foreach (Sprite a in asteroids)
             {
                 a.Position += a.Velocity;
@@ -599,12 +604,16 @@ namespace RetroGame.Screen
                 if (a.Alive && CheckShipCollision(a))
                 {
                     a.Kill();
+                    destroyed.Add(a);
                     lives--;
                     Initialize();
                     if (lives < 1)
                         gameOver = true;
                 }
             }
+
+            foreach (Sprite a in destroyed)
+                SplitAsteroid(a);
         }
 
         //when asteroid get hits.
@@ -691,15 +700,18 @@ namespace RetroGame.Screen
             }
 
             //for displaying the ship
-            spriteBatch.Draw(ship.Texture,
-                ship.Position,
-                null,
-                Color.White,
-                ship.Rotation,
-                ship.Center,
-                ship.Scale,
-                SpriteEffects.None,
-                1.0f);
+            if (ship.Alive)
+            {
+                spriteBatch.Draw(ship.Texture,
+                    ship.Position,
+                    null,
+                    Color.White,
+                    ship.Rotation,
+                    ship.Center,
+                    ship.Scale,
+                    SpriteEffects.None,
+                    1.0f);
+            }
 
             //for displaying the shots in screen
             foreach (Sprite s in shots)
@@ -718,15 +730,18 @@ namespace RetroGame.Screen
             //for displaying asteroids in the screen
             foreach (Sprite a in asteroids)
             {
-                spriteBatch.Draw(a.Texture,
-                    a.Position,
-                    null,
-                    Color.White,
-                    a.Rotation,
-                    a.Center,
-                    a.Scale,
-                    SpriteEffects.None,
-                    1.0f);
+                if (a.Alive)
+                {
+                    spriteBatch.Draw(a.Texture,
+                        a.Position,
+                        null,
+                        Color.White,
+                        a.Rotation,
+                        a.Center,
+                        a.Scale,
+                        SpriteEffects.None,
+                        1.0f);
+                }
             }
 
             spriteBatch.End();
