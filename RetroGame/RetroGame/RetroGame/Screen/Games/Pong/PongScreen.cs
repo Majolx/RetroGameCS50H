@@ -36,15 +36,23 @@ namespace RetroGame.Screen
         Vector2[] v2Arena = new Vector2[3];
         Rectangle[] rArena = new Rectangle[3];
         Texture2D whiteRectangle;
+<<<<<<< HEAD:RetroGame/RetroGame/RetroGame/Screen/Games/Pong/PongScreen.cs
         Texture2D ballTexture;
 
+=======
+        Texture2D t2dBall;
+        
+>>>>>>> Pong now contains its own content manager.:RetroGame/RetroGame/RetroGame/Screen/Games/PongScreen.cs
 
         DialogBoxScreen dialog;
         SpriteFont font;
 
+<<<<<<< HEAD:RetroGame/RetroGame/RetroGame/Screen/Games/Pong/PongScreen.cs
         /// <summary>
         /// A screen-specific content manager.
         /// </summary>
+=======
+>>>>>>> Pong now contains its own content manager.:RetroGame/RetroGame/RetroGame/Screen/Games/PongScreen.cs
         public ContentManager content;
 
         #endregion
@@ -63,8 +71,12 @@ namespace RetroGame.Screen
             if (content == null)
                 content = new ContentManager(ScreenManager.Game.Services, "Content");
 
+<<<<<<< HEAD:RetroGame/RetroGame/RetroGame/Screen/Games/Pong/PongScreen.cs
             ballTexture = content.Load<Texture2D>("sprite/ball");
 
+=======
+            t2dBall = content.Load<Texture2D>("spr/ball");
+>>>>>>> Pong now contains its own content manager.:RetroGame/RetroGame/RetroGame/Screen/Games/PongScreen.cs
 
             Initialize();
 
